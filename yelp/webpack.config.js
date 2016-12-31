@@ -13,6 +13,12 @@ const root = resolve(__dirname);
 const src = join(root, 'src');
 const modules = join(root, 'node_modules');
 const dest = join(root, 'dist');
+const matchCssLoaders = /(^|!)(css-loader)($|!)/;
+const findLoader = (loaders, match) => {
+  const found = loaders.filter(l => l && l.loader && l.loader.match(match));
+  return found ? found[0] : null;
+}
+const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`;
 
 var config = getConfig({
   isDev: isDev,
@@ -26,5 +32,6 @@ config.postcss = [].concat([
   require('autoprefixer')({}),
   require('cssnano')({})
 ]);
+const cssLoader = findLoader(config.module.loaders, matchCssLoaders);
 
 module.exports = config;
