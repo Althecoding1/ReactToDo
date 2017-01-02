@@ -13,6 +13,7 @@ const root = resolve(__dirname);
 const src = join(root, 'src');
 const modules = join(root, 'node_modules');
 const dest = join(root, 'dist');
+
 const matchCssLoaders = /(^|!)(css-loader)($|!)/;
 const findLoader = (loaders, match) => {
   const found = loaders.filter(l => l && l.loader && l.loader.match(match));
@@ -32,6 +33,15 @@ config.postcss = [].concat([
   require('autoprefixer')({}),
   require('cssnano')({})
 ]);
-const cssLoader = findLoader(config.module.loaders, matchCssLoaders);
+const cssloader = findLoader(config.module.loaders, matchCssLoaders);
+
+const newLoader = Object.assign({}, cssloader, {
+  test: /\.module\.css$/,
+  include: [src],
+  loader: cssloader.loader.replace(matchCssLoaders, `1$2?modules&localIdentName=${cssModulesNames}$3`)
+})
+config.module.loaders.push(newLoader);
+cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
+cssloader.loader = newLoader.loader; 
 
 module.exports = config;
