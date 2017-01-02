@@ -41,7 +41,13 @@ const newLoader = Object.assign({}, cssloader, {
   loader: cssloader.loader.replace(matchCssLoaders, `1$2?modules&localIdentName=${cssModulesNames}$3`)
 })
 config.module.loaders.push(newLoader);
+config.module.loaders.push({
+  test: /\.css$/,
+  include: [modules],
+  loader: 'style!css'
+})
 cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
-cssloader.loader = newLoader.loader; 
+cssloader.loader = newLoader.loader;
+
 
 module.exports = config;
