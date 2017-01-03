@@ -14,13 +14,6 @@ const src = join(root, 'src');
 const modules = join(root, 'node_modules');
 const dest = join(root, 'dist');
 
-const matchCssLoaders = /(^|!)(css-loader)($|!)/;
-const findLoader = (loaders, match) => {
-  const found = loaders.filter(l => l && l.loader && l.loader.match(match));
-  return found ? found[0] : null;
-}
-const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`;
-
 var config = getConfig({
   isDev: isDev,
   in: join(src, 'app.js'),
@@ -33,12 +26,22 @@ config.postcss = [].concat([
   require('autoprefixer')({}),
   require('cssnano')({})
 ]);
+
+const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`;
+
+const matchCssLoaders = /(^|!)(css-loader)($|!)/;
+const findLoader = (loaders, match) => {
+  const found = loaders.filter(l => l && l.loader && l.loader.match(match));
+  return found ? found[0] : null;
+}
+
+
 const cssloader = findLoader(config.module.loaders, matchCssLoaders);
 
 const newLoader = Object.assign({}, cssloader, {
   test: /\.module\.css$/,
   include: [src],
-  loader: cssloader.loader.replace(matchCssLoaders, `1$2?modules&localIdentName=${cssModulesNames}$3`)
+  loader: cssloader.loader.replace(matchCssLoaders, `$1$2?modules&localIdentName=${cssModulesNames}$3`)
 })
 config.module.loaders.push(newLoader);
 config.module.loaders.push({
