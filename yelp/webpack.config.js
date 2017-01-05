@@ -2,19 +2,7 @@ const NODE_ENV = process.env.NODE_ENV;
 
 const dotenv = require('dotenv');
 const dotEnvVars = dotenv.config();
-const environmentEnv = dotenv.config({
-  path: join(root, 'config', `${NODE_ENV}.config.js`),
-  silent: true,
-});
-const envVariables = Object.assign({}, dotEnvVars, environmentEnv);
 
-const defines = Object.keys(envVariables).reduce((memo, key) => {
-  const val = JSON.stringify(envVariables[key]);
-  memo[`__${key.toUpperCase()}__`] = val;
-  return memo;
-}, {
-  __NODE_ENV__: JSON.stringify(NODE_ENV)
-});
 
 const webpack = require('webpack');
 const fs = require('fs');
@@ -35,6 +23,21 @@ var config = getConfig({
   in: join(src, 'app.js'),
   out: dest,
   clearBeforeBuild: true
+});
+
+const environmentEnv = dotenv.config({
+  path: join(root, 'config', `${NODE_ENV}.config.js`),
+  silent: true,
+});
+
+const envVariables = Object.assign({}, dotEnvVars, environmentEnv);
+
+const defines = Object.keys(envVariables).reduce((memo, key) => {
+  const val = JSON.stringify(envVariables[key]);
+  memo[`__${key.toUpperCase()}__`] = val;
+  return memo;
+}, {
+  __NODE_ENV__: JSON.stringify(NODE_ENV)
 });
 
 config.postcss = [].concat([
