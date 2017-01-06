@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'font-awesome/css/font-awesome.css';
 import './app.css';
+import 'font-awesome/css/font-awesome.css';
 import styles from './styles.module.css';
 
 const App = React.createClass({
