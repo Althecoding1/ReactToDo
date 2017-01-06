@@ -2,25 +2,27 @@ const NODE_ENV = process.env.NODE_ENV;
 const dotenv = require('dotenv');
 
 const webpack = require('webpack');
-const fs = require('fs');
-const path = require('path'),
-join = path.join,
-resolve = path.resolve;
+const fs      = require('fs');
+const path    = require('path'),
+      join    = path.join,
+      resolve = path.resolve;
 
 const getConfig = require('hjs-webpack');
-const isDev = NODE_ENV === 'development';
 
-const root = resolve(__dirname);
-const src = join(root, 'src');
+const isDev  = NODE_ENV === 'development';
+const isTest = NODE_ENV === 'test';
+
+const root    = resolve(__dirname);
+const src     = join(root, 'src');
 const modules = join(root, 'node_modules');
-const dest = join(root, 'dist');
+const dest    = join(root, 'dist');
 
 var config = getConfig({
   isDev: isDev,
   in: join(src, 'app.js'),
   out: dest,
   clearBeforeBuild: true
-});
+})
 
 //ENV Variables
 
@@ -29,9 +31,12 @@ const environmentEnv = dotenv.config({
   path: join(root, 'config', `${NODE_ENV}.config.js`),
   silent: true,
 });
-const envVariables = Object.assign({}, dotEnvVars, environmentEnv);
+const envVariables =
+    Object.assign({}, dotEnvVars, environmentEnv);
 
-const defines = Object.keys(envVariables).reduce((memo, key) => {
+const defines =
+  Object.keys(envVariables)
+  .reduce((memo, key) => {
     const val = JSON.stringify(envVariables[key]);
     memo[`__${key.toUpperCase()}__`] = val;
     return memo;
@@ -39,29 +44,31 @@ const defines = Object.keys(envVariables).reduce((memo, key) => {
     __NODE_ENV__: JSON.stringify(NODE_ENV)
   });
 
-config.plugins = [new webpack.DefinePlugin(defines)
+config.plugins = [
+  new webpack.DefinePlugin(defines)
 ].concat(config.plugins);
 
 //CSS Modules
 const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`;
+
 const matchCssLoaders = /(^|!)(css-loader)($|!)/;
 
 const findLoader = (loaders, match) => {
   const found = loaders.filter(l => l && l.loader && l.loader.match(match))
   return found ? found[0] : null;
 }
-
-const cssloader = findLoader(config.module.loaders, matchCssLoaders);
+// existing css loader
+const cssloader =
+  findLoader(config.module.loaders, matchCssLoaders);
 
 const newloader = Object.assign({}, cssloader, {
   test: /\.module\.css$/,
   include: [src],
   loader: cssloader.loader.replace(matchCssLoaders, `$1$2?modules&localIdentName=${cssModulesNames}$3`)
 })
-
 config.module.loaders.push(newloader);
 cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
-cssloader.loader = newloader.loader;
+cssloader.loader = newloader.loader
 
 config.module.loaders.push({
   test: /\.css$/,
@@ -74,6 +81,5 @@ config.postcss = [].concat([
   require('autoprefixer')({}),
   require('cssnano')({})
 ])
-
 
 module.exports = config;
